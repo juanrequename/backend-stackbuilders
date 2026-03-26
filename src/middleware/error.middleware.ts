@@ -15,7 +15,7 @@ interface ErrorResponse {
  * Global error handling middleware
  */
 export const errorHandler = (
-  err: Error & { statusCode?: number; code?: number },
+  err: Error & { statusCode?: number; code?: number | string },
   _req: Request,
   res: Response,
   _next: NextFunction

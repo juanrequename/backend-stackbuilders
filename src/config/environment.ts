@@ -18,6 +18,7 @@ export const environment = {
   nodeEnv: normalizeNodeEnv(process.env.NODE_ENV),
   port: Number(process.env.PORT ?? 3000),
   apiBaseUrl: process.env.API_BASE_URL ?? `http://localhost:${process.env.PORT ?? 3000}`,
+  corsOrigin: process.env.CORS_ORIGIN ?? '',
   mongodbUri: process.env.MONGODB_URI ?? '',
   mongodbDb: process.env.MONGODB_DB ?? 'backend',
   hnDefaultLimit: Number(process.env.HN_DEFAULT_LIMIT ?? 30),

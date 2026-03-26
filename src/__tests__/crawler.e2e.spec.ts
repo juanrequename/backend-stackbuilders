@@ -190,6 +190,26 @@ describe('Crawler API end-to-end', () => {
     );
   });
 
+  it('returns all entries unfiltered for filterType none', async () => {
+    const response = await request(app).post(`${basePath}/filter`).send({ filterType: 'none' });
+    expect(response.status).toBe(200);
+    expect(response.headers['x-request-id']).toBeDefined();
+    expect(response.body).toEqual({
+      success: true,
+      data: {
+        entries: normalizedEntries,
+      },
+    });
+    expect(logUsageSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filterType: 'none',
+        entryCount: normalizedEntries.length,
+        resultCount: normalizedEntries.length,
+        status: 'success',
+      })
+    );
+  });
+
   it('returns an upstream error code when HN fetch fails', async () => {
     mockedFetchHnHtml.mockRejectedValueOnce(
       new AppError('HN request failed with status 503', 502, 'HN_UPSTREAM_ERROR')

@@ -1,15 +1,37 @@
 import { environment } from '../../config/environment';
 import { AppError } from '../../errors/appError';
 
-const HN_BASE_URL = 'https://news.ycombinator.com/';
+export const HN_BASE_URL = 'https://news.ycombinator.com/';
 const DEFAULT_TIMEOUT_MS = 10_000;
-let cachedHtml: string | null = null;
-let cachedAt = 0;
+
+class HnCache {
+  private html: string | null = null;
+  private cachedAt = 0;
+
+  get(ttlMs: number): string | null {
+    if (this.html && ttlMs > 0 && Date.now() - this.cachedAt < ttlMs) {
+      return this.html;
+    }
+    return null;
+  }
+
+  set(html: string): void {
+    this.html = html;
+    this.cachedAt = Date.now();
+  }
+
+  clear(): void {
+    this.html = null;
+    this.cachedAt = 0;
+  }
+}
+
+export const hnCache = new HnCache();
 
 export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<string> => {
-  const now = Date.now();
-  if (cachedHtml && environment.hnCacheTtlMs > 0 && now - cachedAt < environment.hnCacheTtlMs) {
-    return cachedHtml;
+  const cached = hnCache.get(environment.hnCacheTtlMs);
+  if (cached) {
+    return cached;
   }
 
   const controller = new AbortController();
@@ -33,8 +55,7 @@ export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<strin
 
     const html = await response.text();
     if (environment.hnCacheTtlMs > 0) {
-      cachedHtml = html;
-      cachedAt = now;
+      hnCache.set(html);
     }
     return html;
   } catch (error) {
@@ -49,5 +70,3 @@ export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<strin
     clearTimeout(timeout);
   }
 };
-
-export { HN_BASE_URL };
