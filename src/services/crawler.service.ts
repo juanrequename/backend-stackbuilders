@@ -1,13 +1,13 @@
-import mongoose from 'mongoose';
 import { randomUUID } from 'crypto';
 import { fetchHnHtml, HN_BASE_URL } from '../libs/crawler/hnClient';
 import { parseHnEntries } from '../libs/crawler/hnParser';
 import { filterFiveOrLessWords, filterMoreThanFiveWords } from '../libs/crawler/hnFilters';
 import { CrawlerFilterType, HnEntry } from '../types/crawler';
 import { UsageLogAttributes, UsageLogModel } from '../models/usageLog.model';
+import { environment } from '../config/environment';
 
 class CrawlerService {
-  async scrape(limit = 30): Promise<HnEntry[]> {
+  async scrape(limit = environment.hnDefaultLimit): Promise<HnEntry[]> {
     const html = await fetchHnHtml();
     return parseHnEntries(html, limit);
   }
@@ -25,10 +25,6 @@ class CrawlerService {
   }
 
   async logUsage(attributes: Omit<UsageLogAttributes, 'requestId'>): Promise<void> {
-    if (mongoose.connection.readyState !== 1) {
-      return;
-    }
-
     await UsageLogModel.create({
       requestId: randomUUID(),
       ...attributes,

@@ -19,4 +19,6 @@ export const environment = {
   port: Number(process.env.PORT ?? 3000),
   mongodbUri: process.env.MONGODB_URI ?? '',
   mongodbDb: process.env.MONGODB_DB ?? 'backend',
+  hnDefaultLimit: Number(process.env.HN_DEFAULT_LIMIT ?? 30),
+  hnTitleWordThreshold: Number(process.env.HN_WORD_THRESHOLD ?? 5),
 };

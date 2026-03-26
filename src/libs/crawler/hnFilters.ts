@@ -1,11 +1,13 @@
 import { HnEntry } from '../../types/crawler';
 import { countTitleWords } from './wordCount';
+import { environment } from '../../config/environment';
 
 const byNumberAsc = (left: HnEntry, right: HnEntry): number => left.number - right.number;
 
 export const filterMoreThanFiveWords = (entries: HnEntry[]): HnEntry[] => {
+  const threshold = environment.hnTitleWordThreshold;
   return entries
-    .filter(entry => countTitleWords(entry.title) > 5)
+    .filter(entry => countTitleWords(entry.title) > threshold)
     .sort((left, right) => {
       if (right.comments !== left.comments) {
         return right.comments - left.comments;
@@ -15,8 +17,9 @@ export const filterMoreThanFiveWords = (entries: HnEntry[]): HnEntry[] => {
 };
 
 export const filterFiveOrLessWords = (entries: HnEntry[]): HnEntry[] => {
+  const threshold = environment.hnTitleWordThreshold;
   return entries
-    .filter(entry => countTitleWords(entry.title) <= 5)
+    .filter(entry => countTitleWords(entry.title) <= threshold)
     .sort((left, right) => {
       if (right.points !== left.points) {
         return right.points - left.points;
