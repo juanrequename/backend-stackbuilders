@@ -15,13 +15,20 @@ export type UsageLogAttributes = {
 const usageLogSchema = new Schema<UsageLogAttributes>(
   {
     requestedAt: { type: Date, required: true },
-    filterType: { type: String, required: true },
+    filterType: {
+      type: String,
+      required: true,
+      enum: ['more_than_five_words', 'five_or_less_words', 'none'],
+    },
     requestId: { type: String },
     entryCount: { type: Number },
     resultCount: { type: Number },
     durationMs: { type: Number },
     sourceUrl: { type: String },
-    status: { type: String },
+    status: {
+      type: String,
+      enum: ['success', 'error'],
+    },
   },
   { collection: 'usage_logs' }
 );
