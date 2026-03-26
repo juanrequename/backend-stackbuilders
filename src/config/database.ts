@@ -48,3 +48,15 @@ export const connectDatabase = async (): Promise<void> => {
 
   await connectionPromise;
 };
+
+export const disconnectDatabase = async (): Promise<void> => {
+  if (!environment.mongodbUri) {
+    return;
+  }
+
+  if (mongoose.connection.readyState === 0) {
+    return;
+  }
+
+  await mongoose.connection.close(false);
+};

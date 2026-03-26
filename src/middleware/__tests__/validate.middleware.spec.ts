@@ -46,6 +46,8 @@ describe('makeValidator middleware', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
+        message: 'Validation error',
+        code: 'VALIDATION_ERROR',
         errors: expect.any(Array),
       })
     );

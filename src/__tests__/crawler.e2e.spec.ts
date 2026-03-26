@@ -3,6 +3,7 @@ import app from '../index';
 import crawlerService from '../services/crawler.service';
 import { fetchHnHtml } from '../libs/crawler/hnClient';
 import { HnEntry } from '../types/crawler';
+import { AppError } from '../errors/appError';
 
 jest.mock('../libs/crawler/hnClient', () => ({
   fetchHnHtml: jest.fn(),
@@ -131,6 +132,7 @@ describe('Crawler API end-to-end', () => {
       .post(`${basePath}/filter`)
       .send({ filterType: 'more_than_five_words' });
     expect(response.status).toBe(200);
+    expect(response.headers['x-request-id']).toBeDefined();
     expect(response.body).toEqual({
       success: true,
       data: {
@@ -155,6 +157,7 @@ describe('Crawler API end-to-end', () => {
       .post(`${basePath}/filter`)
       .send({ filterType: 'five_or_less_words' });
     expect(response.status).toBe(200);
+    expect(response.headers['x-request-id']).toBeDefined();
     expect(response.body).toEqual({
       success: true,
       data: {
@@ -170,6 +173,38 @@ describe('Crawler API end-to-end', () => {
         resultCount: fiveOrLessEntries.length,
         status: 'success',
         durationMs: expect.any(Number),
+      })
+    );
+  });
+
+  it('returns a validation error for invalid filter type', async () => {
+    const response = await request(app).post(`${basePath}/filter`).send({ filterType: 'bad' });
+    expect(response.status).toBe(400);
+    expect(response.headers['x-request-id']).toBeDefined();
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        success: false,
+        message: 'Validation error',
+        code: 'VALIDATION_ERROR',
+      })
+    );
+  });
+
+  it('returns an upstream error code when HN fetch fails', async () => {
+    mockedFetchHnHtml.mockRejectedValueOnce(
+      new AppError('HN request failed with status 503', 502, 'HN_UPSTREAM_ERROR')
+    );
+
+    const response = await request(app)
+      .post(`${basePath}/filter`)
+      .send({ filterType: 'more_than_five_words' });
+
+    expect(response.status).toBe(502);
+    expect(response.headers['x-request-id']).toBeDefined();
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        success: false,
+        code: 'HN_UPSTREAM_ERROR',
       })
     );
   });

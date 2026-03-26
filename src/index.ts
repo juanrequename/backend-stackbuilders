@@ -3,23 +3,23 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
 import swaggerUi from 'swagger-ui-express';
+import rateLimit from 'express-rate-limit';
 import { swaggerSpec } from './config/swagger';
 import crawlerRoutes from './routes/crawler.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
+import { requestContext } from './middleware/request.middleware';
 import logger from './config/logger';
-import { environment } from './config/environment';
-import { connectDatabase } from './config/database';
+import { environment, validateEnvironment } from './config/environment';
+import { connectDatabase, disconnectDatabase } from './config/database';
 
 const app: Express = express();
 const port = environment.port;
-
-// Connect to database
-connectDatabase();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(requestContext);
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -34,9 +34,15 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 const apiBasePath = '/api/v1';
+const crawlerLimiter = rateLimit({
+  windowMs: environment.crawlerRateLimitWindowMs,
+  max: environment.crawlerRateLimitMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // API Routes
-app.use(`${apiBasePath}/crawler`, crawlerRoutes);
+app.use(`${apiBasePath}/crawler`, crawlerLimiter, crawlerRoutes);
 
 // 404 handler - must be after all routes
 app.use(notFoundHandler);
@@ -46,17 +52,42 @@ app.use(errorHandler);
 
 // Start server only when running as entrypoint
 if (require.main === module) {
-  void connectDatabase().catch(error => {
-    logger.error({ error }, 'Failed to connect to MongoDB');
-    process.exit(1);
-  });
+  validateEnvironment();
 
-  app.listen(port, () => {
-    logger.info(`[server]: Server is running`);
-    logger.info(
-      `[docs]: API documentation available at /api-docs. E.g: http://localhost:${port}/api-docs`
-    );
-  });
+  void connectDatabase()
+    .then(() => {
+      const server = app.listen(port, () => {
+        logger.info(`[server]: Server is running`);
+        logger.info(
+          `[docs]: API documentation available at /api-docs. E.g: http://localhost:${port}/api-docs`
+        );
+      });
+
+      const shutdown = (signal: string) => {
+        logger.info({ signal }, 'Shutdown signal received');
+        server.close(() => {
+          void disconnectDatabase()
+            .catch(error => {
+              logger.error({ error }, 'Failed to disconnect from MongoDB');
+            })
+            .finally(() => {
+              process.exit(0);
+            });
+        });
+
+        setTimeout(() => {
+          logger.warn('Forcefully exiting after shutdown timeout');
+          process.exit(1);
+        }, 10_000).unref();
+      };
+
+      process.on('SIGTERM', () => shutdown('SIGTERM'));
+      process.on('SIGINT', () => shutdown('SIGINT'));
+    })
+    .catch(error => {
+      logger.error({ error }, 'Failed to connect to MongoDB');
+      process.exit(1);
+    });
 }
 
 export default app;

@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../config/logger';
 import { environment } from '../config/environment';
+import { AppError } from '../errors/appError';
 
 interface ErrorResponse {
   success: false;
   message: string;
+  code?: string;
   error?: string;
   stack?: string;
 }
@@ -25,6 +27,7 @@ export const errorHandler = (
     const response: ErrorResponse = {
       success: false,
       message: 'Duplicate field value',
+      code: 'DUPLICATE_KEY',
       error: 'A resource with that value already exists',
     };
     res.status(409).json(response);
@@ -32,14 +35,16 @@ export const errorHandler = (
   }
 
   // Default error
-  const statusCode = err.statusCode || 500;
+  const isProd = environment.nodeEnv === 'production';
+  const statusCode = err instanceof AppError ? err.statusCode : err.statusCode || 500;
   const response: ErrorResponse = {
     success: false,
-    message: err.message || 'Internal Server Error',
+    message: isProd ? 'Internal Server Error' : err.message || 'Internal Server Error',
+    code: err instanceof AppError ? err.code : 'INTERNAL_ERROR',
   };
 
   // Include error details and stack trace in development
-  if (environment.nodeEnv === 'development') {
+  if (!isProd) {
     response.error = err.toString();
     response.stack = err.stack;
   }
@@ -54,5 +59,6 @@ export const notFoundHandler = (_req: Request, res: Response): void => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
+    code: 'NOT_FOUND',
   });
 };

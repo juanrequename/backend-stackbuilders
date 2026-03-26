@@ -23,6 +23,8 @@ export const makeValidator = (schema: object) => {
           params: e.params,
         })
       ) || [];
-    return res.status(400).json({ success: false, errors });
+    return res
+      .status(400)
+      .json({ success: false, message: 'Validation error', code: 'VALIDATION_ERROR', errors });
   };
 };

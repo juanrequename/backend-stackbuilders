@@ -1,4 +1,5 @@
 import swaggerJsdoc from 'swagger-jsdoc';
+import { environment } from './environment';
 
 const swaggerOptions: swaggerJsdoc.Options = {
   definition: {
@@ -13,12 +14,8 @@ const swaggerOptions: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000/api/v1',
-        description: 'Development server (v1)',
-      },
-      {
-        url: 'http://localhost:3000/api/v1',
-        description: 'Production server (v1)',
+        url: `${environment.apiBaseUrl}/api/v1`,
+        description: `${environment.nodeEnv} server (v1)`,
       },
     ],
     tags: [
