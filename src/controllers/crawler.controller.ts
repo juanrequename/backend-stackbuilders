@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import crawlerService from '../services/crawler.service';
 import { CrawlerFilterType } from '../types/crawler';
+import { environment } from '../config/environment';
 
 class CrawlerController {
   /**
@@ -58,7 +59,8 @@ class CrawlerController {
     };
 
     try {
-      const sourceEntries = await crawlerService.scrape(30);
+      // Use provided limit when present, otherwise let service use its default from config
+      const sourceEntries = await crawlerService.scrape(environment.hnDefaultLimit);
       const filtered = crawlerService.applyFilter(filterType, sourceEntries);
       const durationMs = Date.now() - startedAt;
 
