@@ -13,9 +13,8 @@ import { connectDatabase } from './config/database';
 const app: Express = express();
 const port = environment.port;
 
-void connectDatabase().catch(error => {
-  logger.error({ error }, 'Failed to connect to MongoDB');
-});
+// Connect to database
+connectDatabase();
 
 // Middleware
 app.use(cors());
@@ -47,6 +46,11 @@ app.use(errorHandler);
 
 // Start server only when running as entrypoint
 if (require.main === module) {
+  void connectDatabase().catch(error => {
+    logger.error({ error }, 'Failed to connect to MongoDB');
+    process.exit(1);
+  });
+
   app.listen(port, () => {
     logger.info(`[server]: Server is running`);
     logger.info(
