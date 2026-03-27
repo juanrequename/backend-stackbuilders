@@ -20,9 +20,7 @@ const port = environment.port;
 app.use(helmet());
 app.use(
   cors({
-    origin: environment.corsOrigin
-      ? environment.corsOrigin.split(',').map(o => o.trim())
-      : false,
+    origin: environment.corsOrigin ? environment.corsOrigin.split(',').map(o => o.trim()) : false,
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
   })

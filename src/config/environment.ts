@@ -47,10 +47,7 @@ export const validateEnvironment = (): void => {
     throw new Error('HN_DEFAULT_LIMIT must be a positive number.');
   }
 
-  if (
-    !Number.isFinite(environment.hnTitleWordThreshold) ||
-    environment.hnTitleWordThreshold <= 0
-  ) {
+  if (!Number.isFinite(environment.hnTitleWordThreshold) || environment.hnTitleWordThreshold <= 0) {
     throw new Error('HN_WORD_THRESHOLD must be a positive number.');
   }
 
@@ -65,10 +62,7 @@ export const validateEnvironment = (): void => {
     throw new Error('CRAWLER_RATE_LIMIT_WINDOW_MS must be a positive number.');
   }
 
-  if (
-    !Number.isFinite(environment.crawlerRateLimitMax) ||
-    environment.crawlerRateLimitMax <= 0
-  ) {
+  if (!Number.isFinite(environment.crawlerRateLimitMax) || environment.crawlerRateLimitMax <= 0) {
     throw new Error('CRAWLER_RATE_LIMIT_MAX must be a positive number.');
   }
 };

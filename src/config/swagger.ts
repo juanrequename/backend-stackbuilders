@@ -1,6 +1,11 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import { environment } from './environment';
 
+const apiDocsGlobs =
+  environment.nodeEnv === 'production'
+    ? ['./dist/routes/*.js', './dist/controllers/*.js']
+    : ['./src/routes/*.ts', './src/controllers/*.ts'];
+
 const swaggerOptions: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
@@ -78,7 +83,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
+  apis: apiDocsGlobs,
 };
 
 export const swaggerSpec = swaggerJsdoc(swaggerOptions);
