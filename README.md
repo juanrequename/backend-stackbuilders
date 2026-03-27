@@ -59,3 +59,9 @@ docker compose up --build
 ```bash
 npm test
 ```
+
+### Architecture Decision Records (ADR)
+
+A record of important architectural decisions is kept in the `docs/adr` folder.
+
+- [0001 — Technology choices for Backend Stackbuilders](docs/adr/0001-technologies.md)
