@@ -5,7 +5,8 @@ Simple Node.js/Express API that crawls Hacker News, filters entries, and logs us
 ### Requirements
 
 - Node.js 24+
-- MongoDB (optional; usage logs are skipped without `MONGODB_URI`)
+- MongoDB
+- Redis
 
 ### Setup
 
