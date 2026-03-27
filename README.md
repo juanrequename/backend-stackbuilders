@@ -40,6 +40,10 @@ Filter types:
 - `five_or_less_words`
 - `none`
 
+#### `GET /crawler/usage`
+Query params:
+- `limit` (optional): max number of logs to return (default `50`)
+
 #### `GET /health`
 Returns server status.
 

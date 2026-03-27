@@ -5,6 +5,8 @@ import { filterCrawlerSchema } from '../middleware/schemas/crawler.schema';
 
 const router = Router();
 
+router.get('/usage', crawlerController.usage.bind(crawlerController));
+
 router.post(
   '/filter',
   makeValidator(filterCrawlerSchema),

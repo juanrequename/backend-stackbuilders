@@ -53,6 +53,38 @@ const swaggerOptions: swaggerJsdoc.Options = {
             },
           },
         },
+        UsageLog: {
+          type: 'object',
+          properties: {
+            requestedAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+            filterType: {
+              type: 'string',
+              enum: ['more_than_five_words', 'five_or_less_words', 'none'],
+            },
+            requestId: {
+              type: 'string',
+            },
+            entryCount: {
+              type: 'integer',
+            },
+            resultCount: {
+              type: 'integer',
+            },
+            durationMs: {
+              type: 'integer',
+            },
+            sourceUrl: {
+              type: 'string',
+            },
+            status: {
+              type: 'string',
+              enum: ['success', 'error'],
+            },
+          },
+        },
         SuccessResponse: {
           type: 'object',
           properties: {

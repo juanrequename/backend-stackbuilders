@@ -2,8 +2,83 @@ import { Request, Response, NextFunction } from 'express';
 import crawlerService from '../services/crawler.service';
 import { CrawlerFilterType } from '../types/crawler';
 import { environment } from '../config/environment';
+import { AppError } from '../errors/appError';
 
 class CrawlerController {
+  /**
+   * @swagger
+   * /crawler/usage:
+   *   get:
+   *     summary: Get usage logs for crawler requests
+   *     tags: [Crawler]
+   *     parameters:
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 500
+   *         description: Max number of usage logs to return (default 50)
+   *     responses:
+   *       200:
+   *         description: Usage log entries
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/SuccessResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         logs:
+   *                           type: array
+   *                           items:
+   *                             $ref: '#/components/schemas/UsageLog'
+   *       400:
+   *         description: Invalid query
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  async usage(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const defaultLimit = 50;
+    const maxLimit = 100;
+    const { limit } = req.query as { limit?: string };
+
+    try {
+      const parsedLimit = limit === undefined ? defaultLimit : Number(limit);
+
+      if (!Number.isFinite(parsedLimit) || parsedLimit <= 0) {
+        throw new AppError('limit must be a positive number', 400, 'VALIDATION_ERROR');
+      }
+
+      if (limit !== undefined && !Number.isInteger(parsedLimit)) {
+        throw new AppError('limit must be an integer', 400, 'VALIDATION_ERROR');
+      }
+
+      const normalizedLimit = Math.min(parsedLimit, maxLimit);
+      const logs = await crawlerService.getUsageLogs(normalizedLimit);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          logs,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   /**
    * @swagger
    * /crawler/filter:

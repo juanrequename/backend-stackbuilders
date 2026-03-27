@@ -31,6 +31,19 @@ class CrawlerService {
       sourceUrl: attributes.sourceUrl ?? HN_BASE_URL,
     });
   }
+
+  async getUsageLogs(limit: number): Promise<UsageLogAttributes[]> {
+    if (!environment.mongodbUri) {
+      return [];
+    }
+
+    const logs = await UsageLogModel.find({}, { _id: 0, __v: 0 })
+      .sort({ requestedAt: -1 })
+      .limit(limit)
+      .lean<UsageLogAttributes[]>();
+
+    return logs;
+  }
 }
 
 export default new CrawlerService();
