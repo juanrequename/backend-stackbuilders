@@ -9,6 +9,8 @@ class HnCache {
   private cachedAt = 0;
 
   get(ttlMs: number): string | null {
+    // Return cached HTML only when present and within TTL. A ttlMs of 0 or
+    // negative disables caching (useful for tests or when caching is turned off).
     if (this.html && ttlMs > 0 && Date.now() - this.cachedAt < ttlMs) {
       return this.html;
     }
@@ -35,6 +37,8 @@ export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<strin
   }
 
   const controller = new AbortController();
+  // Use AbortController to enforce a fetch timeout. This avoids hanging
+  // network requests and lets us map timeouts to a clear error for callers.
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
@@ -54,6 +58,7 @@ export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<strin
     }
 
     const html = await response.text();
+    // Only cache when TTL is positive; allows disabling cache via config.
     if (environment.hnCacheTtlMs > 0) {
       hnCache.set(html);
     }
@@ -62,6 +67,8 @@ export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<strin
     if (error instanceof AppError) {
       throw error;
     }
+    // Distinguish aborts (client-side timeouts) from other network errors so
+    // callers get a clear 504 timeout vs a generic upstream failure.
     if (error instanceof Error && error.name === 'AbortError') {
       throw new AppError('HN request timed out', 504, 'HN_TIMEOUT');
     }

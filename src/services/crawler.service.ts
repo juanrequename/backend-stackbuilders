@@ -25,6 +25,9 @@ class CrawlerService {
   }
 
   async logUsage(attributes: Omit<UsageLogAttributes, 'requestId'>): Promise<void> {
+    // Generate a unique requestId for this usage entry and use the provided
+    // sourceUrl when available; otherwise default to the Hacker News base URL.
+    // Keeping requestId here ensures logs can be correlated across systems.
     await UsageLogModel.create({
       requestId: randomUUID(),
       ...attributes,
@@ -33,6 +36,9 @@ class CrawlerService {
   }
 
   async getUsageLogs(limit: number): Promise<UsageLogAttributes[]> {
+    // If no MongoDB URI is configured, the application runs without persistence.
+    // Return an empty list rather than throwing so callers can handle absence
+    // of DB gracefully (useful in local/dev environments).
     if (!environment.mongodbUri) {
       return [];
     }

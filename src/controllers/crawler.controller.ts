@@ -57,10 +57,13 @@ class CrawlerController {
     try {
       const parsedLimit = limit === undefined ? defaultLimit : Number(limit);
 
+      // Ensure the parsed value is a positive number. We check finiteness to
+      // reject NaN/Infinity and then verify it's > 0.
       if (!Number.isFinite(parsedLimit) || parsedLimit <= 0) {
         throw new AppError('limit must be a positive number', 400, 'VALIDATION_ERROR');
       }
 
+      // If the user provided a value, require it to be an integer (no decimals).
       if (limit !== undefined && !Number.isInteger(parsedLimit)) {
         throw new AppError('limit must be an integer', 400, 'VALIDATION_ERROR');
       }
@@ -165,7 +168,8 @@ class CrawlerController {
           status: 'error',
         });
       } catch {
-        // ignore logging failure
+        // Ignore logging failures — logging should not prevent returning the
+        // original error to the client. Best-effort only.
       }
 
       next(error);
