@@ -1,34 +1,9 @@
 import { environment } from '../../config/environment';
 import { AppError } from '../../errors/appError';
+import { hnCache } from './hnCache';
 
 export const HN_BASE_URL = 'https://news.ycombinator.com/';
 const DEFAULT_TIMEOUT_MS = 10_000;
-
-class HnCache {
-  private html: string | null = null;
-  private cachedAt = 0;
-
-  get(ttlMs: number): string | null {
-    // Return cached HTML only when present and within TTL. A ttlMs of 0 or
-    // negative disables caching (useful for tests or when caching is turned off).
-    if (this.html && ttlMs > 0 && Date.now() - this.cachedAt < ttlMs) {
-      return this.html;
-    }
-    return null;
-  }
-
-  set(html: string): void {
-    this.html = html;
-    this.cachedAt = Date.now();
-  }
-
-  clear(): void {
-    this.html = null;
-    this.cachedAt = 0;
-  }
-}
-
-export const hnCache = new HnCache();
 
 export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<string> => {
   const cached = hnCache.get(environment.hnCacheTtlMs);
