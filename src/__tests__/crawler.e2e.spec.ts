@@ -4,6 +4,7 @@ import crawlerService from '../services/crawler.service';
 import { fetchHnHtml } from '../libs/crawler/hnClient';
 import { HnEntry } from '../types/crawler';
 import { AppError } from '../errors/appError';
+import { UsageLogAttributes } from '../models/usageLog.model';
 
 jest.mock('../libs/crawler/hnClient', () => ({
   fetchHnHtml: jest.fn(),
@@ -14,8 +15,13 @@ const mockedFetchHnHtml = fetchHnHtml as jest.MockedFunction<typeof fetchHnHtml>
 const logUsageSpy: jest.MockedFunction<typeof crawlerService.logUsage> = jest
   .fn()
   .mockResolvedValue(undefined);
+const getUsageLogsSpy: jest.MockedFunction<typeof crawlerService.getUsageLogs> = jest
+  .fn()
+  .mockResolvedValue([]);
 const originalLogUsage = crawlerService.logUsage;
+const originalGetUsageLogs = crawlerService.getUsageLogs;
 crawlerService.logUsage = logUsageSpy;
+crawlerService.getUsageLogs = getUsageLogsSpy;
 
 const sampleHnHtml = `
   <table>
@@ -115,16 +121,39 @@ const normalizedEntries: HnEntry[] = [
 const basePath = '/api/v1/crawler';
 const moreThanFiveEntries = [normalizedEntries[2], normalizedEntries[0]];
 const fiveOrLessEntries = [normalizedEntries[3], normalizedEntries[1]];
+const usageLogsFixture: UsageLogAttributes[] = [
+  {
+    requestedAt: '2024-01-10T10:00:00.000Z' as unknown as Date,
+    filterType: 'more_than_five_words',
+    requestId: 'req-1',
+    entryCount: 30,
+    resultCount: 12,
+    durationMs: 120,
+    sourceUrl: 'https://news.ycombinator.com/',
+    status: 'success',
+  },
+  {
+    requestedAt: '2024-01-10T10:02:00.000Z' as unknown as Date,
+    filterType: 'five_or_less_words',
+    requestId: 'req-2',
+    durationMs: 95,
+    sourceUrl: 'https://news.ycombinator.com/',
+    status: 'error',
+  },
+];
 
 describe('Crawler API end-to-end', () => {
   beforeEach(() => {
     mockedFetchHnHtml.mockReset();
     mockedFetchHnHtml.mockResolvedValue(sampleHnHtml);
     logUsageSpy.mockClear();
+    getUsageLogsSpy.mockClear();
+    getUsageLogsSpy.mockResolvedValue(usageLogsFixture);
   });
 
   afterAll(() => {
     crawlerService.logUsage = originalLogUsage;
+    crawlerService.getUsageLogs = originalGetUsageLogs;
   });
 
   it('filters entries with more than five words and logs usage', async () => {
@@ -225,6 +254,38 @@ describe('Crawler API end-to-end', () => {
       expect.objectContaining({
         success: false,
         code: 'HN_UPSTREAM_ERROR',
+      })
+    );
+  });
+
+  it('returns usage logs with default limit', async () => {
+    const response = await request(app).get(`${basePath}/usage`);
+    expect(response.status).toBe(200);
+    expect(response.headers['x-request-id']).toBeDefined();
+    expect(response.body).toEqual({
+      success: true,
+      data: {
+        logs: usageLogsFixture,
+      },
+    });
+    expect(getUsageLogsSpy).toHaveBeenCalledTimes(1);
+    expect(getUsageLogsSpy).toHaveBeenCalledWith(50);
+  });
+
+  it('caps usage log limit at 100', async () => {
+    const response = await request(app).get(`${basePath}/usage?limit=800`);
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(getUsageLogsSpy).toHaveBeenCalledWith(100);
+  });
+
+  it('returns validation error for invalid usage log limit', async () => {
+    const response = await request(app).get(`${basePath}/usage?limit=-1`);
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        success: false,
+        code: 'VALIDATION_ERROR',
       })
     );
   });
