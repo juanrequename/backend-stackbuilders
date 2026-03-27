@@ -3,6 +3,7 @@ import crawlerService from '../services/crawler.service';
 import { CrawlerFilterType } from '../types/crawler';
 import { environment } from '../config/environment';
 import { AppError } from '../errors/appError';
+import logger from '../config/logger';
 
 class CrawlerController {
   /**
@@ -99,7 +100,7 @@ class CrawlerController {
    *             properties:
    *               filterType:
    *                 type: string
-   *                 enum: [more_than_five_words, five_or_less_words, none]
+   *                 enum: [word_count_gt, word_count_lte, none]
    *     responses:
    *       200:
    *         description: Filtered entries
@@ -167,9 +168,8 @@ class CrawlerController {
           durationMs,
           status: 'error',
         });
-      } catch {
-        // Ignore logging failures — logging should not prevent returning the
-        // original error to the client. Best-effort only.
+      } catch (error) {
+        logger.warn({ error }, 'Failed to log usage');
       }
 
       next(error);

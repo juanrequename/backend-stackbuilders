@@ -4,7 +4,7 @@ import { environment } from '../../config/environment';
 
 const byNumberAsc = (left: HnEntry, right: HnEntry): number => left.number - right.number;
 
-export const filterMoreThanFiveWords = (entries: HnEntry[]): HnEntry[] => {
+export const filterMoreThanNWords = (entries: HnEntry[]): HnEntry[] => {
   const threshold = environment.hnTitleWordThreshold;
   return entries
     .filter(entry => countTitleWords(entry.title) > threshold)
@@ -16,7 +16,7 @@ export const filterMoreThanFiveWords = (entries: HnEntry[]): HnEntry[] => {
     });
 };
 
-export const filterFiveOrLessWords = (entries: HnEntry[]): HnEntry[] => {
+export const filterLessEqualThanNWords = (entries: HnEntry[]): HnEntry[] => {
   const threshold = environment.hnTitleWordThreshold;
   return entries
     .filter(entry => countTitleWords(entry.title) <= threshold)

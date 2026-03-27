@@ -18,7 +18,7 @@ const usageLogSchema = new Schema<UsageLogAttributes>(
     filterType: {
       type: String,
       required: true,
-      enum: ['more_than_five_words', 'five_or_less_words', 'none'],
+      enum: ['word_count_gt', 'word_count_lte', 'none'],
     },
     requestId: { type: String },
     entryCount: { type: Number },

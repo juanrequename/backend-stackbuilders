@@ -124,7 +124,7 @@ const fiveOrLessEntries = [normalizedEntries[3], normalizedEntries[1]];
 const usageLogsFixture: UsageLogAttributes[] = [
   {
     requestedAt: '2024-01-10T10:00:00.000Z' as unknown as Date,
-    filterType: 'more_than_five_words',
+    filterType: 'word_count_gt',
     requestId: 'req-1',
     entryCount: 30,
     resultCount: 12,
@@ -134,7 +134,7 @@ const usageLogsFixture: UsageLogAttributes[] = [
   },
   {
     requestedAt: '2024-01-10T10:02:00.000Z' as unknown as Date,
-    filterType: 'five_or_less_words',
+    filterType: 'word_count_lte',
     requestId: 'req-2',
     durationMs: 95,
     sourceUrl: 'https://news.ycombinator.com/',
@@ -159,7 +159,7 @@ describe('Crawler API end-to-end', () => {
   it('filters entries with more than five words and logs usage', async () => {
     const response = await request(app)
       .post(`${basePath}/filter`)
-      .send({ filterType: 'more_than_five_words' });
+    .send({ filterType: 'word_count_gt' });
     expect(response.status).toBe(200);
     expect(response.headers['x-request-id']).toBeDefined();
     expect(response.body).toEqual({
@@ -172,7 +172,7 @@ describe('Crawler API end-to-end', () => {
     expect(logUsageSpy).toHaveBeenCalledTimes(1);
     expect(logUsageSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        filterType: 'more_than_five_words',
+        filterType: 'word_count_gt',
         entryCount: normalizedEntries.length,
         resultCount: moreThanFiveEntries.length,
         status: 'success',
@@ -184,7 +184,7 @@ describe('Crawler API end-to-end', () => {
   it('filters entries with five or less words and logs usage', async () => {
     const response = await request(app)
       .post(`${basePath}/filter`)
-      .send({ filterType: 'five_or_less_words' });
+      .send({ filterType: 'word_count_lte' });
     expect(response.status).toBe(200);
     expect(response.headers['x-request-id']).toBeDefined();
     expect(response.body).toEqual({
@@ -197,7 +197,7 @@ describe('Crawler API end-to-end', () => {
     expect(logUsageSpy).toHaveBeenCalledTimes(1);
     expect(logUsageSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        filterType: 'five_or_less_words',
+        filterType: 'word_count_lte',
         entryCount: normalizedEntries.length,
         resultCount: fiveOrLessEntries.length,
         status: 'success',
@@ -246,7 +246,7 @@ describe('Crawler API end-to-end', () => {
 
     const response = await request(app)
       .post(`${basePath}/filter`)
-      .send({ filterType: 'more_than_five_words' });
+      .send({ filterType: 'word_count_gt' });
 
     expect(response.status).toBe(502);
     expect(response.headers['x-request-id']).toBeDefined();

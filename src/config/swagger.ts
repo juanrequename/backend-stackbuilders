@@ -62,7 +62,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
             },
             filterType: {
               type: 'string',
-              enum: ['more_than_five_words', 'five_or_less_words', 'none'],
+              enum: ['word_count_gt', 'word_count_lte', 'none'],
             },
             requestId: {
               type: 'string',

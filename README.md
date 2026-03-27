@@ -32,12 +32,12 @@ Base path: `/api/v1`
 #### `POST /crawler/filter`
 Request body:
 ```json
-{ "filterType": "more_than_five_words" }
+{ "filterType": "word_count_gt" }
 ```
 
 Filter types:
-- `more_than_five_words`
-- `five_or_less_words`
+- `word_count_gt`
+- `word_count_lte`
 - `none`
 
 #### `GET /crawler/usage`

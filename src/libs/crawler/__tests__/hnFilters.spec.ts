@@ -1,4 +1,4 @@
-import { filterFiveOrLessWords, filterMoreThanFiveWords } from '../hnFilters';
+import { filterLessEqualThanNWords, filterMoreThanNWords } from '../hnFilters';
 import { HnEntry } from '../../../types/crawler';
 
 const entries: HnEntry[] = [
@@ -10,12 +10,12 @@ const entries: HnEntry[] = [
 
 describe('hnFilters', () => {
   it('filters and sorts entries with more than five words by comments', () => {
-    const result = filterMoreThanFiveWords(entries);
+    const result = filterMoreThanNWords(entries);
     expect(result.map(entry => entry.number)).toEqual([2, 4]);
   });
 
   it('filters and sorts entries with five or fewer words by points', () => {
-    const result = filterFiveOrLessWords(entries);
+    const result = filterLessEqualThanNWords(entries);
     expect(result.map(entry => entry.number)).toEqual([3, 1]);
   });
 });

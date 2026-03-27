@@ -5,4 +5,4 @@ export type HnEntry = {
   comments: number;
 };
 
-export type CrawlerFilterType = 'more_than_five_words' | 'five_or_less_words' | 'none';
+export type CrawlerFilterType = 'word_count_gt' | 'word_count_lte' | 'none';
