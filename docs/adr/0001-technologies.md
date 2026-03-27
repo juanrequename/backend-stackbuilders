@@ -19,12 +19,14 @@ We use the following primary technologies:
 - Node.js (v24+) — Chosen for ecosystem maturity and native modern JS/TS support.
 - TypeScript — language for type safety and improved maintainability.
 - Mongoose + MongoDB — ODM and database for usage logs.
+- Redis (ioredis) — optional cache for Hacker News HTML responses.
 - Jest + ts-jest — testing framework for unit and integration tests.
 - Docker / Docker Compose — containerization for consistent environment.
 
 ## Rationale
 
 - Express: Lightweight and well-known, keeping the app simple; integrates easily with middleware (validation, rate-limiting, docs).
+- Redis: Fast in-memory store that reduces upstream requests while remaining optional for local/dev setups.
 
 ## Alternatives considered
 

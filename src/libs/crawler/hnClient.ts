@@ -6,7 +6,7 @@ export const HN_BASE_URL = 'https://news.ycombinator.com/';
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<string> => {
-  const cached = hnCache.get(environment.hnCacheTtlMs);
+  const cached = await hnCache.get(environment.hnCacheTtlMs);
   if (cached) {
     return cached;
   }
@@ -35,7 +35,7 @@ export const fetchHnHtml = async (timeoutMs = DEFAULT_TIMEOUT_MS): Promise<strin
     const html = await response.text();
     // Only cache when TTL is positive; allows disabling cache via config.
     if (environment.hnCacheTtlMs > 0) {
-      hnCache.set(html);
+      await hnCache.set(html, environment.hnCacheTtlMs);
     }
     return html;
   } catch (error) {

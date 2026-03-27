@@ -21,6 +21,7 @@ export const environment = {
   corsOrigin: process.env.CORS_ORIGIN ?? '',
   mongodbUri: process.env.MONGODB_URI ?? '',
   mongodbDb: process.env.MONGODB_DB ?? 'backend',
+  redisUrl: process.env.REDIS_URL ?? '',
   hnDefaultLimit: Number(process.env.HN_DEFAULT_LIMIT ?? 30),
   hnTitleWordThreshold: Number(process.env.HN_WORD_THRESHOLD ?? 5),
   hnCacheTtlMs: Number(process.env.HN_CACHE_TTL_MS ?? 30000),
@@ -41,6 +42,19 @@ export const validateEnvironment = (): void => {
     new URL(environment.apiBaseUrl);
   } catch {
     throw new Error('API_BASE_URL must be a valid URL.');
+  }
+
+  if (environment.redisUrl) {
+    let redisUrl: URL;
+    try {
+      redisUrl = new URL(environment.redisUrl);
+    } catch {
+      throw new Error('REDIS_URL must be a valid URL.');
+    }
+
+    if (!['redis:', 'rediss:'].includes(redisUrl.protocol)) {
+      throw new Error('REDIS_URL must start with redis:// or rediss://.');
+    }
   }
 
   if (!Number.isFinite(environment.hnDefaultLimit) || environment.hnDefaultLimit <= 0) {

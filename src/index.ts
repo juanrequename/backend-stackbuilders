@@ -12,6 +12,7 @@ import { requestContext } from './middleware/request.middleware';
 import logger from './config/logger';
 import { environment, validateEnvironment } from './config/environment';
 import { connectDatabase, disconnectDatabase } from './config/database';
+import { connectRedis, disconnectRedis } from './config/redis';
 
 const app: Express = express();
 const port = environment.port;
@@ -62,7 +63,7 @@ app.use(errorHandler);
 if (require.main === module) {
   validateEnvironment();
 
-  void connectDatabase()
+  void Promise.all([connectDatabase(), connectRedis()])
     .then(() => {
       const server = app.listen(port, () => {
         logger.info(`[server]: Server is running`);
@@ -74,13 +75,16 @@ if (require.main === module) {
       const shutdown = (signal: string) => {
         logger.info({ signal }, 'Shutdown signal received');
         server.close(() => {
-          void disconnectDatabase()
-            .catch(error => {
+          void Promise.all([
+            disconnectDatabase().catch(error => {
               logger.error({ error }, 'Failed to disconnect from MongoDB');
-            })
-            .finally(() => {
-              process.exit(0);
-            });
+            }),
+            disconnectRedis().catch(error => {
+              logger.error({ error }, 'Failed to disconnect from Redis');
+            }),
+          ]).finally(() => {
+            process.exit(0);
+          });
         });
 
         setTimeout(() => {
@@ -93,7 +97,7 @@ if (require.main === module) {
       process.on('SIGINT', () => shutdown('SIGINT'));
     })
     .catch(error => {
-      logger.error({ error }, 'Failed to connect to MongoDB');
+      logger.error({ error }, 'Failed to connect to dependencies');
       process.exit(1);
     });
 }
