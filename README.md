@@ -8,13 +8,6 @@ Simple Node.js/Express API that crawls Hacker News, filters entries, and logs us
 - MongoDB
 - Redis
 
-### Setup
-
-```bash
-npm install
-npm run dev
-```
-
 ### Environment Variables
 
 Copy `.env.example` to `.env` and adjust as needed.
@@ -30,6 +23,29 @@ Copy `.env.example` to `.env` and adjust as needed.
 - `MONGODB_URI`: MongoDB connection string
 - `MONGODB_DB`: MongoDB database name
 - `REDIS_URL`: Redis connection URL (optional; HN cache is skipped without it)
+
+### Setup
+
+```bash
+npm install
+npm run dev
+```
+
+### Docker
+
+```bash
+docker compose up --build
+```
+
+### Tests
+
+```bash
+npm test
+```
+
+### Swagger
+
+Available at `/api-docs`.
 
 ### API
 
@@ -58,22 +74,6 @@ Query params:
 #### `GET /health`
 
 Returns server status.
-
-### Swagger
-
-Available at `/api-docs`.
-
-### Docker
-
-```bash
-docker compose up --build
-```
-
-### Tests
-
-```bash
-npm test
-```
 
 ### Architecture Decision Records (ADR)
 
